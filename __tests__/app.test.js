@@ -4,7 +4,6 @@ const db = require('../db/connection');
 const seed = require('../db/seeds/seed');
 
 const testData = require('../db/data/test-data');
-const { categoryData } = testData;
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -18,7 +17,8 @@ describe('GET /api/categories', () => {
         const { categories } = response.body;
         expect(categories).toBeInstanceOf(Array);
 
-        expect(categories).toHaveLength(categoryData.length);
+        // length should match categoryData.length
+        expect(categories).toHaveLength(4);
         categories.forEach((category) => {
           expect(category).toMatchObject({
             slug: expect.any(String),

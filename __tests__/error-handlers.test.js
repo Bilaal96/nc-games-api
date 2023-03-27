@@ -13,7 +13,3 @@ describe('handleNotFound()', () => {
       });
   });
 });
-
-describe('handleCustomErrors()', () => {
-  it.todo('Custom: returns an custom error object with message & status code');
-});
