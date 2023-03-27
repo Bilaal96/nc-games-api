@@ -1,2 +1,2 @@
-exports.handleNotFound = require('./handle-not-found');
+exports.handleRouteNotFound = require('./handle-route-not-found');
 exports.handleServerError = require('./handle-server-error');

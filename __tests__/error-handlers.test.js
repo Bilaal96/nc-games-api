@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../app');
 
-describe('handleNotFound()', () => {
+describe('handleRouteNotFound()', () => {
   it('404: returns error object with message when route does not exist', () => {
     return request(app)
       .get('/does-not-exist')
