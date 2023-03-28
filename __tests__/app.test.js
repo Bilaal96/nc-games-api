@@ -4,6 +4,7 @@ const db = require('../db/connection');
 const seed = require('../db/seeds/seed');
 
 const testData = require('../db/data/test-data');
+const { reviewData, commentData } = testData;
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -38,15 +39,16 @@ describe('GET /api/reviews/:review_id', () => {
         const { review } = response.body;
 
         expect(review).toMatchObject({
-          review_id: expect.any(Number),
-          title: expect.any(String),
-          review_body: expect.any(String),
-          designer: expect.any(String),
-          review_img_url: expect.any(String),
-          votes: expect.any(Number),
-          category: expect.any(String),
-          owner: expect.any(String),
-          created_at: expect.any(String),
+          review_id: 1,
+          title: 'Agricola',
+          review_body: 'Farmyard fun!',
+          designer: 'Uwe Rosenberg',
+          review_img_url:
+            'https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700',
+          votes: 1,
+          category: 'euro game',
+          owner: 'mallionaire',
+          created_at: '2021-01-18T10:00:20.514Z',
         });
       });
   });
