@@ -137,3 +137,70 @@ describe('GET /api/reviews', () => {
       });
   });
 });
+
+describe('GET /api/reviews/:review_id/comments', () => {
+  it('200: returns an empty array if no comments exist for the requested review_id', () => {
+    return request(app)
+      .get('/api/reviews/1/comments')
+      .expect(200)
+      .then((response) => {
+        const { comments } = response.body;
+        expect(comments).toEqual([]);
+      });
+  });
+
+  it('200: returns an array of comments for the requested review_id', () => {
+    return request(app)
+      .get('/api/reviews/2/comments')
+      .expect(200)
+      .then((response) => {
+        const { comments } = response.body;
+
+        expect(comments).toBeInstanceOf(Array);
+        expect(comments).toHaveLength(3);
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            review_id: 2,
+            body: expect.any(String),
+            votes: expect.any(Number),
+            author: expect.any(String),
+            created_at: expect.any(String),
+          });
+        });
+      });
+  });
+
+  // When sorting dates, to get newest date/most recent time first, sort in descending order
+  it('200: returns array of comments sorted with most recent comments first - i.e. descending order', () => {
+    return request(app)
+      .get('/api/reviews/2/comments')
+      .expect(200)
+      .then((response) => {
+        const { comments } = response.body;
+        expect(comments).toBeInstanceOf(Array);
+        expect(comments).toHaveLength(3);
+        expect(comments).toBeSortedBy('created_at', { descending: true });
+      });
+  });
+
+  it('400: responds with an error when the provided ID is not a number', () => {
+    return request(app)
+      .get('/api/reviews/not-a-number/comments')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe('Invalid ID');
+      });
+  });
+
+  it('404: responds with an error when the provided ID does not exist', () => {
+    return request(app)
+      .get('/api/reviews/99999/comments')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe(
+          'The review (for which comments were requested) does not exist'
+        );
+      });
+  });
+});

@@ -38,3 +38,30 @@ exports.selectReviews = () => {
 
   return db.query(selectReviewsQuery).then((result) => result.rows);
 };
+
+exports.selectCommentsByReviewId = (reviewId) => {
+  const selectCommentsByReviewIdQuery = `
+    SELECT * FROM comments
+    WHERE review_id = $1
+    ORDER BY created_at DESC;
+  `;
+
+  return db
+    .query(selectCommentsByReviewIdQuery, [reviewId])
+    .then((result) => result.rows);
+};
+
+// If this check returns a rejected promise it will be caught by closest catch-block in the promise chain
+// Otherwise code execution continues as expected
+exports.checkReviewExists = (reviewId) => {
+  return db
+    .query('SELECT * FROM reviews WHERE review_id = $1', [reviewId])
+    .then((result) => {
+      if (!result.rowCount)
+        return Promise.reject({
+          status: 404,
+          message:
+            'The review (for which comments were requested) does not exist',
+        });
+    });
+};
