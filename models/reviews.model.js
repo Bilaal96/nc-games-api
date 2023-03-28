@@ -19,3 +19,22 @@ exports.selectReviewById = (reviewId) => {
     return result.rows[0];
   });
 };
+
+exports.selectReviews = () => {
+  /**
+   * COUNT() returns value as a bigint, which is then parsed as a string
+   * CAST() or the type-cast operator (::) allow us to convert from one type to another
+   * CAST(COUNT(*) AS INT) or COUNT(*)::INT - cast string to integer
+   
+   * NOTE: descending order on a date lists most recent date first
+   */
+  const selectReviewsQuery = `
+    SELECT reviews.*, CAST(COUNT(comment_id) AS INT) AS comment_count
+    FROM reviews
+    LEFT OUTER JOIN comments ON reviews.review_id = comments.review_id
+    GROUP BY reviews.review_id
+    ORDER BY reviews.created_at DESC;
+  `;
+
+  return db.query(selectReviewsQuery).then((result) => result.rows);
+};

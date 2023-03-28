@@ -71,3 +71,69 @@ describe('GET /api/reviews/:review_id', () => {
       });
   });
 });
+
+describe('GET /api/reviews', () => {
+  it('200: returns array of review objects', () => {
+    return request(app)
+      .get('/api/reviews')
+      .expect(200)
+      .then((response) => {
+        const { reviews } = response.body;
+        expect(reviews).toBeInstanceOf(Array);
+
+        // length of reviewData.length
+        expect(reviews).toHaveLength(13);
+        reviews.forEach((review) => {
+          expect(review).toMatchObject({
+            review_id: expect.any(Number),
+            title: expect.any(String),
+            review_body: expect.any(String),
+            designer: expect.any(String),
+            review_img_url: expect.any(String),
+            votes: expect.any(Number),
+            category: expect.any(String),
+            owner: expect.any(String),
+            created_at: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+
+  it('200: comment_count property should return the total number of comments related to a single review_id', () => {
+    return request(app)
+      .get('/api/reviews')
+      .expect(200)
+      .then((response) => {
+        const { reviews } = response.body;
+
+        expect(reviews).toBeInstanceOf(Array);
+        expect(reviews).toHaveLength(13); // reviewData.length
+
+        reviews.forEach((review) => {
+          // count num of comments per review
+          const commentCount = commentData.reduce((count, comment) => {
+            if (comment.review_id === review.review_id) {
+              count++;
+            }
+            return count;
+          }, 0);
+
+          // check if comment_count was calculated correctly
+          expect(review.comment_count).toBe(commentCount);
+        });
+      });
+  });
+
+  it('200: returns array of review objects sorted by created_at in descending order (newest first)', () => {
+    return request(app)
+      .get('/api/reviews')
+      .expect(200)
+      .then((response) => {
+        const { reviews } = response.body;
+
+        expect(reviews).toHaveLength(13);
+        expect(reviews).toBeSortedBy('created_at', { descending: true });
+      });
+  });
+});
