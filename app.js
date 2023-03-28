@@ -9,6 +9,7 @@ const {
   handleRouteNotFound,
   handleCustomError,
   handleServerError,
+  handlePSQL400s,
 } = require('./error-handlers');
 
 const app = express();
@@ -19,6 +20,7 @@ app.get('/api/reviews/:review_id', getReviewById);
 
 // error handlers
 app.use('*', handleRouteNotFound);
+app.use(handlePSQL400s);
 app.use(handleCustomError);
 app.use(handleServerError);
 

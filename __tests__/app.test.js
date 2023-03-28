@@ -56,7 +56,7 @@ describe('GET /api/reviews/:review_id', () => {
       .get('/api/reviews/not-a-number')
       .expect(400)
       .then(({ body }) => {
-        expect(body.message).toBe('Received invalid review ID');
+        expect(body.message).toBe('Invalid ID');
       });
   });
 
