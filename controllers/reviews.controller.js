@@ -1,4 +1,9 @@
-const { selectReviewById, selectReviews } = require('../models/reviews.model');
+const {
+  selectReviewById,
+  selectReviews,
+  selectCommentsByReviewId,
+  checkReviewExists,
+} = require('../models/reviews.model');
 
 exports.getReviewById = (req, res, next) => {
   const { review_id } = req.params;
@@ -16,6 +21,30 @@ exports.getReviews = (req, res, next) => {
   selectReviews()
     .then((reviews) => {
       res.status(200).send({ reviews });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getCommentsByReviewId = (req, res, next) => {
+  const { review_id } = req.params;
+
+  selectCommentsByReviewId(review_id)
+    .then((comments) => {
+      if (!comments.length) {
+        /**
+         * reject with error if review does not exist - because comments cannot exist without a review
+         * otherwise, review does not have comments, return empty comments array
+         */
+        return checkReviewExists(review_id).then(() => comments);
+      } else {
+        // return array of comment objects
+        return comments;
+      }
+    })
+    .then((comments) => {
+      res.status(200).send({ comments });
     })
     .catch((err) => {
       next(err);
