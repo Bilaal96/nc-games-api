@@ -8,6 +8,7 @@ const {
   getCommentsByReviewId,
   postCommentByReviewId,
   patchVotesByReviewId,
+  deleteCommentByCommentId,
 } = require('./controllers/reviews.controller');
 
 // Error handling middleware
@@ -33,6 +34,8 @@ app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
 app.post('/api/reviews/:review_id/comments', postCommentByReviewId);
 
 app.patch('/api/reviews/:review_id', patchVotesByReviewId);
+
+app.delete('/api/comments/:comment_id', deleteCommentByCommentId);
 
 // error handlers
 app.use('*', handleRouteNotFound);

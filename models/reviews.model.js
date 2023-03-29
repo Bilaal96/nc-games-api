@@ -114,3 +114,24 @@ exports.updateVotesByReviewId = (incrementVotes, reviewId) => {
     .query(updateVotesByReviewIdQuery, [incrementVotes, reviewId])
     .then((result) => result.rows[0]);
 };
+
+exports.checkCommentExists = (commentId) => {
+  return db
+    .query('SELECT * FROM comments WHERE comment_id = $1', [commentId])
+    .then((result) => {
+      if (!result.rowCount)
+        return Promise.reject({
+          status: 404,
+          message: 'The requested comment does not exist',
+        });
+    });
+};
+
+exports.deleteComment = (commentId) => {
+  const deleteCommentByCommentIdQuery = `
+    DELETE FROM comments
+    WHERE comment_id = $1;
+  `;
+
+  return db.query(deleteCommentByCommentIdQuery, [commentId]);
+};
