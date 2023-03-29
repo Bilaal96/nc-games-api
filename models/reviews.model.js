@@ -95,3 +95,16 @@ exports.insertCommentByReviewId = (newComment, reviewId) => {
     .query(insertCommentByReviewIdQuery, values)
     .then((result) => result.rows[0]);
 };
+
+exports.updateVotesByReviewId = (incrementVote, reviewId) => {
+  const updateVotesByReviewIdQuery = `
+    UPDATE reviews
+    SET votes = votes + $1
+    WHERE review_id = $2
+    RETURNING *;
+  `;
+
+  return db
+    .query(updateVotesByReviewIdQuery, [incrementVote, reviewId])
+    .then((result) => result.rows[0]);
+};
