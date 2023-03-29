@@ -7,6 +7,7 @@ const {
   getReviews,
   getCommentsByReviewId,
   postCommentByReviewId,
+  patchVotesByReviewId,
 } = require('./controllers/reviews.controller');
 
 // Error handling middleware
@@ -30,6 +31,8 @@ app.get('/api/reviews', getReviews);
 app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
 
 app.post('/api/reviews/:review_id/comments', postCommentByReviewId);
+
+app.patch('/api/reviews/:review_id', patchVotesByReviewId);
 
 // error handlers
 app.use('*', handleRouteNotFound);

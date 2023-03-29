@@ -60,8 +60,7 @@ exports.checkReviewExists = (reviewId) => {
       if (!result.rowCount)
         return Promise.reject({
           status: 404,
-          message:
-            'The review (for which comments were requested) does not exist',
+          message: 'The requested review does not exist',
         });
     });
 };
@@ -93,5 +92,25 @@ exports.insertCommentByReviewId = (newComment, reviewId) => {
 
   return db
     .query(insertCommentByReviewIdQuery, values)
+    .then((result) => result.rows[0]);
+};
+
+exports.updateVotesByReviewId = (incrementVotes, reviewId) => {
+  if (incrementVotes === undefined) {
+    return Promise.reject({
+      status: 400,
+      message: 'Value to increment votes by was not provided',
+    });
+  }
+
+  const updateVotesByReviewIdQuery = `
+    UPDATE reviews
+    SET votes = votes + $1
+    WHERE review_id = $2
+    RETURNING *;
+  `;
+
+  return db
+    .query(updateVotesByReviewIdQuery, [incrementVotes, reviewId])
     .then((result) => result.rows[0]);
 };
