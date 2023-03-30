@@ -202,7 +202,7 @@ describe('GET /api/reviews/:review_id/comments', () => {
       .get('/api/reviews/99999/comments')
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe('The requested review does not exist');
+        expect(body.message).toBe('Resource not found');
       });
   });
 });
@@ -388,7 +388,7 @@ describe('PATCH /api/reviews/:review_id', () => {
       .send(testIncrementVote)
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe('The requested review does not exist');
+        expect(body.message).toBe('Resource not found');
       });
   });
 
@@ -403,6 +403,38 @@ describe('PATCH /api/reviews/:review_id', () => {
         expect(body.message).toBe(
           'Value to increment votes by was not provided'
         );
+      });
+  });
+});
+
+describe('DELETE /api/comments/:comments_id', () => {
+  it('204: successfully deletes a single comment, returns nothing in response', () => {
+    return request(app)
+      .delete('/api/comments/1')
+      .expect(204)
+      .then((response) => {
+        // response.body should be an empty object
+        expect(response.body).toEqual({});
+      });
+  });
+
+  it('400: responds with an error when the provided ID is not a number', () => {
+    return request(app)
+      .delete('/api/comments/not-a-number')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe(
+          'Type of the provided value does not match the type expected in the related database field'
+        );
+      });
+  });
+
+  it('404: responds with an error when the provided ID does not exist', () => {
+    return request(app)
+      .delete('/api/comments/99999')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe('Resource not found');
       });
   });
 });

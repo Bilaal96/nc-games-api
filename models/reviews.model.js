@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const format = require('pg-format');
 
 exports.selectReviewById = (reviewId) => {
   const selectReviewByIdQuery = `
@@ -51,22 +52,8 @@ exports.selectCommentsByReviewId = (reviewId) => {
     .then((result) => result.rows);
 };
 
-// If this check returns a rejected promise it will be caught by closest catch-block in the promise chain
-// Otherwise code execution continues as expected
-exports.checkReviewExists = (reviewId) => {
-  return db
-    .query('SELECT * FROM reviews WHERE review_id = $1', [reviewId])
-    .then((result) => {
-      if (!result.rowCount)
-        return Promise.reject({
-          status: 404,
-          message: 'The requested review does not exist',
-        });
-    });
-};
-
 // NOTE: When the requested ID does not exist for an insert/update, the error is handled in handle-psql-400s.js
-// This saves us from having to make an extra DB request with checkReviewExists
+// This saves us from having to make an extra DB request with checkResourceExists
 exports.insertCommentByReviewId = (newComment, reviewId) => {
   const { username, body } = newComment;
 
@@ -113,4 +100,25 @@ exports.updateVotesByReviewId = (incrementVotes, reviewId) => {
   return db
     .query(updateVotesByReviewIdQuery, [incrementVotes, reviewId])
     .then((result) => result.rows[0]);
+};
+
+exports.deleteComment = (commentId) => {
+  const deleteCommentByCommentIdQuery = `
+    DELETE FROM comments
+    WHERE comment_id = $1;
+  `;
+
+  return db.query(deleteCommentByCommentIdQuery, [commentId]);
+};
+
+// If this check returns a rejected promise it will be caught by closest catch-block in the promise chain
+// Otherwise code execution continues as expected
+exports.checkResourceExists = (table, column, value) => {
+  const selectQuery = format('SELECT * FROM %I WHERE %I = $1;', table, column);
+
+  return db.query(selectQuery, [value]).then((result) => {
+    if (!result.rowCount) {
+      return Promise.reject({ status: 404, message: 'Resource not found' });
+    }
+  });
 };

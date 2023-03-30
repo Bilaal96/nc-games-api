@@ -2,9 +2,10 @@ const {
   selectReviewById,
   selectReviews,
   selectCommentsByReviewId,
-  checkReviewExists,
   insertCommentByReviewId,
   updateVotesByReviewId,
+  deleteComment,
+  checkResourceExists,
 } = require('../models/reviews.model');
 
 exports.getReviewById = (req, res, next) => {
@@ -39,7 +40,9 @@ exports.getCommentsByReviewId = (req, res, next) => {
          * reject with error if review does not exist - because comments cannot exist without a review
          * otherwise, review does not have comments, return empty comments array
          */
-        return checkReviewExists(review_id).then(() => comments);
+        return checkResourceExists('reviews', 'review_id', review_id).then(
+          () => comments
+        );
       } else {
         // return array of comment objects
         return comments;
@@ -66,11 +69,29 @@ exports.postCommentByReviewId = (req, res, next) => {
     });
 };
 
+exports.deleteCommentByCommentId = (req, res, next) => {
+  const { comment_id } = req.params;
+
+  /**
+   * Attempting to delete a comment that does not exist will still result in 204 response
+   * To account for this false-positive, we check if the comment exists first
+   * If the comment does not exist, an error is thrown, and the then-block containing the delete request is not executed
+   */
+  checkResourceExists('comments', 'comment_id', comment_id)
+    .then(() => deleteComment(comment_id))
+    .then(() => {
+      res.sendStatus(204);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 exports.patchVotesByReviewId = (req, res, next) => {
   const { inc_votes } = req.body;
   const { review_id } = req.params;
 
-  checkReviewExists(review_id)
+  checkResourceExists('reviews', 'review_id', review_id)
     .then(() => updateVotesByReviewId(inc_votes, review_id))
     .then((updatedReview) => {
       res.status(200).send({ updatedReview });
