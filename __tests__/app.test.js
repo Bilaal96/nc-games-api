@@ -202,7 +202,7 @@ describe('GET /api/reviews/:review_id/comments', () => {
       .get('/api/reviews/99999/comments')
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe('The requested review does not exist');
+        expect(body.message).toBe('Resource not found');
       });
   });
 });
@@ -388,7 +388,7 @@ describe('PATCH /api/reviews/:review_id', () => {
       .send(testIncrementVote)
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe('The requested review does not exist');
+        expect(body.message).toBe('Resource not found');
       });
   });
 
@@ -434,7 +434,7 @@ describe('DELETE /api/comments/:comments_id', () => {
       .delete('/api/comments/99999')
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe('The requested comment does not exist');
+        expect(body.message).toBe('Resource not found');
       });
   });
 });
