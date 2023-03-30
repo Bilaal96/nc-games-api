@@ -6,6 +6,7 @@ const {
   getReviewById,
   getReviews,
   getCommentsByReviewId,
+  postCommentByReviewId,
 } = require('./controllers/reviews.controller');
 
 // Error handling middleware
@@ -18,6 +19,8 @@ const {
 
 const app = express();
 
+app.use(express.json());
+
 app.get('/api/categories', getCategories);
 
 app.get('/api/reviews/:review_id', getReviewById);
@@ -25,6 +28,8 @@ app.get('/api/reviews/:review_id', getReviewById);
 app.get('/api/reviews', getReviews);
 
 app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
+
+app.post('/api/reviews/:review_id/comments', postCommentByReviewId);
 
 // error handlers
 app.use('*', handleRouteNotFound);

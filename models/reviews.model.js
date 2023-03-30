@@ -65,3 +65,33 @@ exports.checkReviewExists = (reviewId) => {
         });
     });
 };
+
+// NOTE: When the requested ID does not exist for an insert/update, the error is handled in handle-psql-400s.js
+// This saves us from having to make an extra DB request with checkReviewExists
+exports.insertCommentByReviewId = (newComment, reviewId) => {
+  const { username, body } = newComment;
+
+  // check if newComment contains only the appropriate keys
+  if (!username || !body || Object.keys(newComment).length > 2) {
+    return Promise.reject({
+      status: 400,
+      message:
+        'Invalid comment received - must only include the keys: username & body',
+    });
+  }
+
+  // newComment is valid, attempt to insert in comments table
+  const values = [username, body, reviewId];
+
+  const insertCommentByReviewIdQuery = `
+    INSERT INTO comments
+      (author, body, review_id)
+    VALUES
+      ($1, $2, $3)
+    RETURNING *;
+  `;
+
+  return db
+    .query(insertCommentByReviewIdQuery, values)
+    .then((result) => result.rows[0]);
+};

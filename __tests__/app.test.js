@@ -204,3 +204,94 @@ describe('GET /api/reviews/:review_id/comments', () => {
       });
   });
 });
+
+describe('POST /api/reviews/:review_id/comments', () => {
+  it('201: successfully inserts a comment into the comments table, responds with the newly created comment', () => {
+    const newComment = {
+      username: 'mallionaire',
+      body: 'I completely agree, this game is awesome!',
+    };
+
+    return request(app)
+      .post('/api/reviews/1/comments')
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        const { createdComment } = response.body;
+
+        // test DB was seeded with 6 comments, so next id should be 7
+        expect(createdComment).toMatchObject({
+          comment_id: 7,
+          author: 'mallionaire',
+          body: 'I completely agree, this game is awesome!',
+          review_id: 1,
+          votes: 0,
+          // string representation of date object
+          created_at: expect.any(String),
+        });
+      });
+  });
+
+  it('400: responds with error when posted comment is in the incorrect format - missing keys', () => {
+    const badComment = { username: 'mallionaire' };
+    return request(app)
+      .post('/api/reviews/1/comments')
+      .send(badComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe(
+          'Invalid comment received - must only include the keys: username & body'
+        );
+      });
+  });
+
+  it('400: responds with error when posted comment is in the incorrect format - additional keys', () => {
+    const badComment = {
+      username: 'mallionaire',
+      body: 'I completely agree, this game is awesome!',
+      votes: 1000,
+      admin: true,
+      review_id: 100000,
+    };
+
+    return request(app)
+      .post('/api/reviews/1/comments')
+      .send(badComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe(
+          'Invalid comment received - must only include the keys: username & body'
+        );
+      });
+  });
+
+  it('400: responds with an error when the provided ID is not a number', () => {
+    const newComment = {
+      username: 'mallionaire',
+      body: 'I completely agree, this game is awesome!',
+    };
+
+    return request(app)
+      .post('/api/reviews/not-a-number/comments')
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe('Invalid ID');
+      });
+  });
+
+  it('404: responds with an error when the provided ID does not exist', () => {
+    const newComment = {
+      username: 'mallionaire',
+      body: 'I completely agree, this game is awesome!',
+    };
+
+    return request(app)
+      .post('/api/reviews/99999/comments')
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe('ID does not exist');
+      });
+  });
+});
