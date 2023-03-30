@@ -58,7 +58,9 @@ describe('GET /api/reviews/:review_id', () => {
       .get('/api/reviews/not-a-number')
       .expect(400)
       .then(({ body }) => {
-        expect(body.message).toBe('Invalid ID');
+        expect(body.message).toBe(
+          'Type of the provided value does not match the type expected in the related database field'
+        );
       });
   });
 
@@ -189,7 +191,9 @@ describe('GET /api/reviews/:review_id/comments', () => {
       .get('/api/reviews/not-a-number/comments')
       .expect(400)
       .then(({ body }) => {
-        expect(body.message).toBe('Invalid ID');
+        expect(body.message).toBe(
+          'Type of the provided value does not match the type expected in the related database field'
+        );
       });
   });
 
@@ -198,9 +202,7 @@ describe('GET /api/reviews/:review_id/comments', () => {
       .get('/api/reviews/99999/comments')
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe(
-          'The review (for which comments were requested) does not exist'
-        );
+        expect(body.message).toBe('The requested review does not exist');
       });
   });
 });
@@ -276,7 +278,9 @@ describe('POST /api/reviews/:review_id/comments', () => {
       .send(newComment)
       .expect(400)
       .then(({ body }) => {
-        expect(body.message).toBe('Invalid ID');
+        expect(body.message).toBe(
+          'Type of the provided value does not match the type expected in the related database field'
+        );
       });
   });
 
@@ -292,6 +296,113 @@ describe('POST /api/reviews/:review_id/comments', () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.message).toBe('ID does not exist');
+      });
+  });
+});
+
+describe('PATCH /api/reviews/:review_id', () => {
+  it('200: returns updated review, with vote property incremented by value of inc_votes (a positive integer)', () => {
+    const testIncrementVote = { inc_votes: 5 };
+
+    return request(app)
+      .patch('/api/reviews/1')
+      .send(testIncrementVote)
+      .expect(200)
+      .then((response) => {
+        const { updatedReview } = response.body;
+
+        expect(updatedReview).toEqual({
+          review_id: 1,
+          title: 'Agricola',
+          review_body: 'Farmyard fun!',
+          designer: 'Uwe Rosenberg',
+          review_img_url:
+            'https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700',
+          votes: 6, // was 1, updated to 6
+          category: 'euro game',
+          owner: 'mallionaire',
+          created_at: '2021-01-18T10:00:20.514Z',
+        });
+      });
+  });
+
+  // NOTE: like Reddit's voting system, a negative integer is a valid value for votes
+  it('200: returns updated review, with vote property decremented when value of inc_votes is a negative integer', () => {
+    const testDecrementVote = { inc_votes: -2 };
+
+    return request(app)
+      .patch('/api/reviews/1')
+      .send(testDecrementVote)
+      .expect(200)
+      .then((response) => {
+        const { updatedReview } = response.body;
+
+        expect(updatedReview).toEqual({
+          review_id: 1,
+          title: 'Agricola',
+          review_body: 'Farmyard fun!',
+          designer: 'Uwe Rosenberg',
+          review_img_url:
+            'https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700',
+          votes: -1, // was 1, updated to -1
+          category: 'euro game',
+          owner: 'mallionaire',
+          created_at: '2021-01-18T10:00:20.514Z',
+        });
+      });
+  });
+
+  it('400: responds with an error when the increment value provided is not an integer', () => {
+    const testBadIncrement = { inc_votes: 1.5 };
+
+    return request(app)
+      .patch('/api/reviews/1')
+      .send(testBadIncrement)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe(
+          'Type of the provided value does not match the type expected in the related database field'
+        );
+      });
+  });
+
+  it('400: responds with an error when the provided ID is not a number', () => {
+    const testIncrementVote = { inc_votes: 5 };
+
+    return request(app)
+      .patch('/api/reviews/not-a-number')
+      .send(testIncrementVote)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe(
+          'Type of the provided value does not match the type expected in the related database field'
+        );
+      });
+  });
+
+  it('404: responds with an error when the provided ID does not exist', () => {
+    const testIncrementVote = { inc_votes: 5 };
+
+    return request(app)
+      .patch('/api/reviews/99999')
+      .send(testIncrementVote)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe('The requested review does not exist');
+      });
+  });
+
+  it('400: responds with an error when request body does not include inc_votes property', () => {
+    const testEmptyRequestBody = {};
+
+    return request(app)
+      .patch('/api/reviews/1')
+      .send(testEmptyRequestBody)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe(
+          'Value to increment votes by was not provided'
+        );
       });
   });
 });
