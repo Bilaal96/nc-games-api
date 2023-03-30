@@ -10,6 +10,7 @@ const {
   patchVotesByReviewId,
   deleteCommentByCommentId,
 } = require('./controllers/reviews.controller');
+const { getUsers } = require('./controllers/users.controller');
 
 // Error handling middleware
 const {
@@ -23,21 +24,21 @@ const app = express();
 
 app.use(express.json());
 
+// Categories
 app.get('/api/categories', getCategories);
 
+// Reviews
 app.get('/api/reviews/:review_id', getReviewById);
-
 app.get('/api/reviews', getReviews);
-
 app.get('/api/reviews/:review_id/comments', getCommentsByReviewId);
-
 app.post('/api/reviews/:review_id/comments', postCommentByReviewId);
-
 app.patch('/api/reviews/:review_id', patchVotesByReviewId);
-
 app.delete('/api/comments/:comment_id', deleteCommentByCommentId);
 
-// error handlers
+// Users
+app.get('/api/users', getUsers);
+
+// Error handlers
 app.use('*', handleRouteNotFound);
 app.use(handlePSQL400s);
 app.use(handleCustomError);
