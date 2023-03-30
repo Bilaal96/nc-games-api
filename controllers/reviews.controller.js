@@ -73,14 +73,14 @@ exports.deleteCommentByCommentId = (req, res, next) => {
   const { comment_id } = req.params;
 
   /**
-   * Attempting to delete an comment that does not exist will still result in 204 response
+   * Attempting to delete a comment that does not exist will still result in 204 response
    * To account for this false-positive, we check if the comment exists first
    * If the comment does not exist, an error is thrown, and the then-block containing the delete request is not executed
    */
   checkResourceExists('comments', 'comment_id', comment_id)
     .then(() => deleteComment(comment_id))
     .then(() => {
-      res.status(204).send();
+      res.sendStatus(204);
     })
     .catch((err) => {
       next(err);
