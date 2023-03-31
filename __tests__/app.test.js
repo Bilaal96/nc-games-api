@@ -52,6 +52,51 @@ describe('GET /api/reviews/:review_id', () => {
         });
       });
   });
+  it('200: returns a single review object with the given review_id, with comment_count of 0', () => {
+    return request(app)
+      .get('/api/reviews/1')
+      .expect(200)
+      .then((response) => {
+        const { review } = response.body;
+
+        expect(review).toMatchObject({
+          review_id: 1,
+          title: 'Agricola',
+          review_body: 'Farmyard fun!',
+          designer: 'Uwe Rosenberg',
+          review_img_url:
+            'https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700',
+          votes: 1,
+          category: 'euro game',
+          owner: 'mallionaire',
+          created_at: new Date(1610964020514).toJSON(),
+          comment_count: 0,
+        });
+      });
+  });
+
+  it('200: returns a single review object with the given review_id, with comment_count > 0', () => {
+    return request(app)
+      .get('/api/reviews/2')
+      .expect(200)
+      .then((response) => {
+        const { review } = response.body;
+
+        expect(review).toMatchObject({
+          review_id: 2,
+          title: 'Jenga',
+          review_body: 'Fiddly fun for all the family',
+          designer: 'Leslie Scott',
+          review_img_url:
+            'https://images.pexels.com/photos/4473494/pexels-photo-4473494.jpeg?w=700&h=700',
+          votes: 5,
+          category: 'dexterity',
+          owner: 'philippaclaire9',
+          created_at: new Date(1610964101251).toJSON(),
+          comment_count: 3,
+        });
+      });
+  });
 
   it('400: responds with an error when review_id received is not a number', () => {
     return request(app)
@@ -417,7 +462,7 @@ describe('PATCH /api/reviews/:review_id', () => {
           votes: 6, // was 1, updated to 6
           category: 'euro game',
           owner: 'mallionaire',
-          created_at: '2021-01-18T10:00:20.514Z',
+          created_at: new Date(1610964020514).toJSON(),
         });
       });
   });
@@ -443,7 +488,7 @@ describe('PATCH /api/reviews/:review_id', () => {
           votes: -1, // was 1, updated to -1
           category: 'euro game',
           owner: 'mallionaire',
-          created_at: '2021-01-18T10:00:20.514Z',
+          created_at: new Date(1610964020514).toJSON(),
         });
       });
   });
