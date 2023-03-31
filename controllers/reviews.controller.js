@@ -21,7 +21,20 @@ exports.getReviewById = (req, res, next) => {
 };
 
 exports.getReviews = (req, res, next) => {
-  selectReviews()
+  const { category } = req.query;
+
+  selectReviews(req.query)
+    .then((reviews) => {
+      // Throws error if category does not exist in categories table
+      // Otherwise execution continues and an empty array is returned as the response
+      if (category && reviews.length === 0) {
+        return checkResourceExists('categories', 'slug', category).then(
+          () => reviews // empty array
+        );
+      }
+
+      return reviews; // array of review objects
+    })
     .then((reviews) => {
       res.status(200).send({ reviews });
     })
