@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs/promises');
 
 // Controllers
 const { getCategories } = require('./controllers/categories.controller');
@@ -23,6 +24,17 @@ const {
 const app = express();
 
 app.use(express.json());
+
+// Get summary of API endpoints
+app.get('/api', (req, res, next) => {
+  fs.readFile(`${__dirname}/endpoints.json`, 'utf-8')
+    .then((fileContents) => {
+      res.status(200).send({ endpoints: fileContents });
+    })
+    .catch((err) => {
+      next({ status: 500, message: 'Server failed to read endpoints data' });
+    });
+});
 
 // Categories
 app.get('/api/categories', getCategories);

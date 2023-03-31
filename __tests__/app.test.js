@@ -9,6 +9,30 @@ const { reviewData, commentData } = testData;
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
+describe('GET /api', () => {
+  it('200: returns JSON object describing all available endpoints for this API', () => {
+    return request(app)
+      .get('/api')
+      .expect(200)
+      .then((response) => {
+        const { endpoints } = response.body;
+
+        expect(JSON.parse(endpoints)).toMatchObject({
+          'GET /api': expect.anything(),
+          'GET /api/categories': expect.anything(),
+          'GET /api/users': expect.anything(),
+          // reviews & comments
+          'GET /api/reviews/:review_id': expect.anything(),
+          'GET /api/reviews': expect.anything(),
+          'GET /api/reviews/:review_id/comments': expect.anything(),
+          'POST /api/reviews/:review_id/comments': expect.anything(),
+          'PATCH /api/reviews/:review_id': expect.anything(),
+          'DELETE /api/comments/:comment_id': expect.anything(),
+        });
+      });
+  });
+});
+
 describe('GET /api/categories', () => {
   it('200: returns an array of category objects', () => {
     return request(app)
