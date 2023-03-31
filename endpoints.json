@@ -4,7 +4,6 @@
   },
   "GET /api/categories": {
     "description": "serves an array of all categories",
-    "queries": [],
     "exampleResponse": {
       "categories": [
         {
@@ -12,6 +11,49 @@
           "slug": "Social deduction"
         }
       ]
+    }
+  },
+  "GET /api/users": {
+    "description": "serves an array if all users",
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "mallionaire",
+          "name": "haz",
+          "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+        },
+        {
+          "username": "philippaclaire9",
+          "name": "philippa",
+          "avatar_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+        },
+        {
+          "username": "bainesface",
+          "name": "sarah",
+          "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4"
+        },
+        {
+          "username": "dav3rid",
+          "name": "dave",
+          "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+        }
+      ]
+    }
+  },
+
+  "GET /api/reviews/:review_id": {
+    "description": "serves a single review object",
+    "exampleResponse": {
+      "review": {
+        "title": "One Night Ultimate Werewolf",
+        "designer": "Akihisa Okui",
+        "owner": "happyamy2016",
+        "review_img_url": "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+        "category": "hidden-roles",
+        "created_at": 1610964101251,
+        "votes": 5,
+        "comment_count": "3"
+      }
     }
   },
   "GET /api/reviews": {
@@ -24,11 +66,81 @@
           "designer": "Akihisa Okui",
           "owner": "happyamy2016",
           "review_img_url": "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-          "category": "hidden-roles",
+          "category": "social-deduction",
           "created_at": 1610964101251,
           "votes": 5
         }
       ]
+    }
+  },
+  "GET /api/reviews/:review_id/comments": {
+    "description": "serves an array of all comments for a single review",
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 5,
+          "body": "Now this is a story all about how, board games turned my life upside down",
+          "review_id": 2,
+          "author": "mallionaire",
+          "votes": 13,
+          "created_at": "2021-01-18T10:24:05.410Z"
+        },
+        {
+          "comment_id": 1,
+          "body": "I loved this game too!",
+          "review_id": 2,
+          "author": "bainesface",
+          "votes": 16,
+          "created_at": "2017-11-22T12:43:33.389Z"
+        },
+        {
+          "comment_id": 4,
+          "body": "EPIC board game!",
+          "review_id": 2,
+          "author": "bainesface",
+          "votes": 16,
+          "created_at": "2017-11-22T12:36:03.389Z"
+        }
+      ]
+    }
+  },
+  "POST /api/reviews/:review_id/comments": {
+    "description": "adds a new comment on a review to the comments database table, then serves the newly added comment",
+    "exampleRequestBody": {
+      "newComment": {
+        "username": "mallionaire",
+        "body": "I completely agree, this game is awesome!"
+      }
+    },
+    "exampleResponse": {
+      "createdComment": {
+        "comment_id": 7,
+        "body": "I completely agree, this game is awesome!",
+        "review_id": 1,
+        "author": "mallionaire",
+        "votes": 0,
+        "created_at": "2023-03-31T12:33:32.948Z"
+      }
+    }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes the comment in the comments database table with the specified comment_id"
+  },
+  "PATCH /api/reviews/:review_id": {
+    "description": "increments the votes field for a single review by the specified amount, then serves the updated review object",
+    "exampleRequestBody": { "inc_votes": 5 },
+    "exampleResponse": {
+      "updatedReview": {
+        "review_id": 1,
+        "title": "Agricola",
+        "category": "euro game",
+        "designer": "Uwe Rosenberg",
+        "owner": "mallionaire",
+        "review_body": "Farmyard fun!",
+        "review_img_url": "https://images.pexels.com/photos/974314/pexels-photo-974314.jpeg?w=700&h=700",
+        "created_at": "2021-01-18T10:00:20.514Z",
+        "votes": 6
+      }
     }
   }
 }
