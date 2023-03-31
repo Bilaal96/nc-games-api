@@ -127,7 +127,7 @@ describe('GET /api/reviews', () => {
       });
   });
 
-  it('200: returns array of review objects sorted by created_at in descending order (newest first)', () => {
+  it('200: by default, returns array of review objects sorted by created_at in descending order (newest first)', () => {
     return request(app)
       .get('/api/reviews')
       .expect(200)
@@ -137,6 +137,102 @@ describe('GET /api/reviews', () => {
         expect(reviews).toHaveLength(13);
         expect(reviews).toBeSortedBy('created_at', { descending: true });
       });
+  });
+
+  describe('Filter by category: /api/reviews?category', () => {
+    it('200: returns all reviews with the specified category', () => {
+      return request(app)
+        .get('/api/reviews?category=social+deduction')
+        .expect(200)
+        .then((response) => {
+          const { reviews } = response.body;
+          expect(reviews).toBeInstanceOf(Array);
+          expect(reviews).toHaveLength(11);
+
+          reviews.forEach((review) => {
+            expect(review.category).toBe('social deduction');
+          });
+        });
+    });
+
+    it('200: returns empty array when there are no reviews with the specified category', () => {
+      return request(app)
+        .get("/api/reviews?category=children's+games")
+        .expect(200)
+        .then((response) => {
+          const { reviews } = response.body;
+          expect(reviews).toEqual([]);
+        });
+    });
+
+    it('404: responds with an error when the specified category does not exist in categories table', () => {
+      return request(app)
+        .get('/api/reviews?category=non-existent')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.message).toBe('Resource not found');
+        });
+    });
+  });
+
+  describe('Sort reviews by user-specified column_name & order (ascending/descending)', () => {
+    it('200: returns reviews sorted by user-specified column_name in ascending order (by default)', () => {
+      return request(app)
+        .get('/api/reviews?sort_by=title')
+        .expect(200)
+        .then((response) => {
+          const { reviews } = response.body;
+          expect(reviews).toBeSortedBy('title');
+        });
+    });
+
+    it('200: returns reviews sorted by user-specified column_name in ascending order (when order is explicitly passed)', () => {
+      return request(app)
+        .get('/api/reviews?sort_by=title&order=asc')
+        .expect(200)
+        .then((response) => {
+          const { reviews } = response.body;
+          expect(reviews).toBeSortedBy('title');
+        });
+    });
+
+    it('200: returns reviews sorted by user-specified column_name in descending order', () => {
+      return request(app)
+        .get('/api/reviews?sort_by=title&order=desc')
+        .expect(200)
+        .then((response) => {
+          const { reviews } = response.body;
+          expect(reviews).toBeSortedBy('title', { descending: true });
+        });
+    });
+
+    it('200: returns array of review objects sorted by created_at in ascending order (oldest first), when order=asc is specified without a sort_by query', () => {
+      return request(app)
+        .get('/api/reviews?order=asc')
+        .expect(200)
+        .then((response) => {
+          const { reviews } = response.body;
+          expect(reviews).toBeSortedBy('created_at');
+        });
+    });
+
+    it("400: responds with an error when 'sort_by' does not have a valid value to query by", () => {
+      return request(app)
+        .get('/api/reviews?sort_by=invalid-sort')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).toBe('Invalid sort_by query');
+        });
+    });
+
+    it("400: responds with an error when 'order' does not have a valid value to query by", () => {
+      return request(app)
+        .get('/api/reviews?order=invalid-order')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).toBe('Invalid order query');
+        });
+    });
   });
 });
 

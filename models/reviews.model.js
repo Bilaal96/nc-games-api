@@ -21,23 +21,61 @@ exports.selectReviewById = (reviewId) => {
   });
 };
 
-exports.selectReviews = () => {
+exports.selectReviews = (reqQuery) => {
+  const { category, sort_by, order } = reqQuery;
+  const sqlQueryParams = [];
+
+  // validate sort_by
+  const validSortCriteria = [
+    'title', // game title
+    'category',
+    'votes', // review votes
+    'designer', // game designer
+    'owner', // author of review
+    'created_at',
+  ];
+
+  if (sort_by && !validSortCriteria.includes(sort_by)) {
+    return Promise.reject({ status: 400, message: 'Invalid sort_by query' });
+  }
+
+  // validate order
+  if (order && !['asc', 'desc'].includes(order)) {
+    return Promise.reject({ status: 400, message: 'Invalid order query' });
+  }
+
   /**
    * COUNT() returns value as a bigint, which is then parsed as a string
-   * CAST() or the type-cast operator (::) allow us to convert from one type to another
-   * CAST(COUNT(*) AS INT) or COUNT(*)::INT - cast string to integer
-   
+   * To convert from one type to another use: CAST(COUNT(*) AS <TYPE>) or COUNT(*)::<TYPE>
+   * Cast string to integer: CAST(COUNT(*) AS INT) or COUNT(*)::INT
    * NOTE: descending order on a date lists most recent date first
    */
-  const selectReviewsQuery = `
+  let selectReviewsQuery = `
     SELECT reviews.*, CAST(COUNT(comment_id) AS INT) AS comment_count
     FROM reviews
     LEFT OUTER JOIN comments ON reviews.review_id = comments.review_id
-    GROUP BY reviews.review_id
-    ORDER BY reviews.created_at DESC;
   `;
 
-  return db.query(selectReviewsQuery).then((result) => result.rows);
+  // Only return reviews in category if specified
+  if (category) {
+    sqlQueryParams.push(category);
+    selectReviewsQuery += ' WHERE reviews.category = $1\n';
+  }
+
+  // Required with aggregate function COUNT
+  selectReviewsQuery += ' GROUP BY reviews.review_id\n';
+
+  if (sort_by) {
+    // user-specified sort - defaults to ascending order, unless specified otherwise by user
+    selectReviewsQuery += ` ORDER BY reviews.${sort_by} ${order || 'ASC'}\n`;
+  } else {
+    // default sort: by created_at (in descending order, unless specified otherwise by user)
+    selectReviewsQuery += ` ORDER BY reviews.created_at ${order || 'DESC'}\n`;
+  }
+
+  return db
+    .query(selectReviewsQuery, sqlQueryParams)
+    .then((result) => result.rows);
 };
 
 exports.selectCommentsByReviewId = (reviewId) => {
