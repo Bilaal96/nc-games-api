@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs/promises');
+const cors = require('cors');
 
 // Controllers
 const { getCategories } = require('./controllers/categories.controller');
@@ -23,6 +24,7 @@ const {
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 // Get summary of API endpoints
